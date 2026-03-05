@@ -6,3 +6,4 @@ order_router = APIRouter(prefix='/pedidos', tags=['pedidos'])
 async def get_orders():
     """Endpoint to retrieve orders."""
     return {'message': 'Rota de pedidos'}
+    return {'message': 'Rota de pedidos'}

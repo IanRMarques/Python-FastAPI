@@ -10,11 +10,17 @@ Base = declarative_base()
 #usuario, pedidos, itenspedidos
 class Usuario(Base):
     __tablename__ = 'usuarios'
-    id = Column(Integer, primary_key=True)
-    nome = Column(String(50), nullable=False)
-    email = Column(String(100), unique=True, nullable=False)
-    senha = Column(String(100), nullable=False)
-    ativo = Column(Boolean, default=True)
-    admin = Column(Boolean, default=False)
+    id = Column("id",Integer, primary_key=True, autoincrement=True)
+    nome = Column("nome",String(50), nullable=False)
+    email = Column("email",String(100), unique=True, nullable=False)
+    senha = Column("senha",String(100), nullable=False)
+    ativo = Column("ativo",Boolean, default=True)
+    admin = Column("admin",Boolean, default=False)
+    def __init__(self, nome, email, senha, ativo=True, admin=False):
+        self.nome = nome
+        self.email = email
+        self.senha = senha
+        self.ativo = ativo
+        self.admin = admin
 
 # executa a criação dos metadados (tabelas) no banco de dados 
