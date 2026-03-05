@@ -23,4 +23,13 @@ class Usuario(Base):
         self.ativo = ativo
         self.admin = admin
 
+class Pedido(Base):
+    __tablename__ = 'pedidos'
+    id = Column("id",Integer, primary_key=True, autoincrement=True)
+    descricao = Column("descricao",String(200), nullable=False)
+    valor = Column("valor",Integer, nullable=False)
+    def __init__(self, descricao, valor):
+        self.descricao = descricao
+        self.valor = valor
+
 # executa a criação dos metadados (tabelas) no banco de dados 
