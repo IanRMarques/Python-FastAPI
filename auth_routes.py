@@ -2,11 +2,15 @@ from fastapi import APIRouter, Depends, HTTPException
 from models import Usuario, db
 from dependencies import pegar_sessao
 from dependencies import bcrypt_context
-from schemas import UserSchema
+from schemas import LoginSchema, UserSchema
 from sqlalchemy.orm import Session
 
 
-auth_router = APIRouter(prefix='/auth', tags=['auth'])
+auth_router = APIRouter(prefix='/auth', tags=['auth']) 
+
+def criar_token(id_usuario):
+    token = f"3egesfserfset{id_usuario}" 
+    return token
 
 @auth_router.get('/')
 async def home():
@@ -30,3 +34,17 @@ async def create_user(usuario_schema: UserSchema, session = Depends(pegar_sessao
         session.add(novo_usuario) #adicionando o novo usuário à sessão
         session.commit() #confirmando a transação para salvar o novo usuário no banco de dados
         return {'message': f'Usuário criado com sucesso', 'nome': usuario_schema.nome, 'email': usuario_schema.email}
+
+#autenticação de login, verificando se o email existe e se a senha fornecida corresponde à senha armazenada no banco de dados para aquele email
+#login - email e senha - token JWT (JSON Web Token) para autenticação e autorização em rotas protegidas
+@auth_router.post('/login')
+async def login(login_schema: LoginSchema, session: Session = Depends(pegar_sessao)):
+    usuario = session.query(Usuario).filter(Usuario.email == login_schema.email).first() #consultando o banco de dados para encontrar um usuário com o email fornecido
+    if not usuario:
+        raise HTTPException(status_code=400, detail="Usuário não encontrado") #se o usuário não for encontrado, levantando uma exceção HTTP com status 404 e uma mensagem de erro indicando que o usuário não foi encontrado
+    else:
+        access_token = criar_token(usuario.id) #criando um token de acesso usando a função criar_token, passando o ID do usuário encontrado
+        return {
+            "access_token": access_token, 
+            "token_type": "bearer"
+            } #retornando o token de acesso e o tipo de token como resposta da API, permitindo que o cliente use esse token para autenticação em rotas protegidas no futuro

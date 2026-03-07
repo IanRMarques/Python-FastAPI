@@ -12,3 +12,16 @@ class UserSchema(BaseModel):
     class Config:
         from_attributes = True #configurando a classe para permitir a criação de instâncias do modelo a partir de objetos que possuem atributos correspondentes, 
         #facilitando a integração com outros tipos de dados e bibliotecas que possam retornar objetos em vez de dicionários
+
+class PedidoSchema(BaseModel):
+    id_usuario: int
+
+    class Config:
+        from_attributes = True
+
+class LoginSchema(BaseModel):
+    email: str
+    senha: str
+
+    class Config:
+        from_attributes = True
