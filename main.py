@@ -14,12 +14,13 @@ from fastapi import FastAPI
 load_dotenv() #carregando as variáveis de ambiente do arquivo .env para o ambiente de execução do aplicativo, permitindo o acesso a essas variáveis através do código
     
 
-SECRET_KEY= os.getenv("SECRET_KEY") #obtendo o valor da variável de ambiente SECRET_KEY, que é usada para criptografar as senhas dos usuários, garantindo que a chave secreta seja mantida segura e não exposta no código-fonte
 
 app = FastAPI()
 
  #criando um objeto CryptContext configurado para usar o algoritmo de hash bcrypt, que é uma escolha segura para armazenar senhas, 
  #e definindo a opção deprecated como "auto" para lidar automaticamente com senhas antigas que possam ter sido hashadas com algoritmos menos seguros
+bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 from auth_routes import auth_router
 from order_routes import order_router
 

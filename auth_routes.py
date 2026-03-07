@@ -1,16 +1,27 @@
 from fastapi import APIRouter, Depends, HTTPException
 from models import Usuario, db
-from dependencies import pegar_sessao
-from dependencies import bcrypt_context
+from dependencies import bcrypt_context, ALGORITHM, SECRET_KEY, ACCESS_TOKEN_EXPIRE_MINUTES, pegar_sessao
 from schemas import LoginSchema, UserSchema
 from sqlalchemy.orm import Session
-
-
+from jose import jwt, JWTError
+from datetime import datetime, timedelta, timezone #importando classes para lidar com datas e horários, especialmente para configurar a expiração dos tokens de autenticação
 auth_router = APIRouter(prefix='/auth', tags=['auth']) 
 
 def criar_token(id_usuario):
-    token = f"3egesfserfset{id_usuario}" 
-    return token
+    data_expiracao = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES) #calculando a data de expiração do token, 
+    #adicionando o tempo de expiração configurado (em minutos) à data e hora atual
+    dic_info = {"sub": id_usuario, "exp": data_expiracao} #criando um dicionário com as informações a serem incluídas no token, como o ID do usuário e a data de expiração
+    jwt_codificado = jwt.encode(dic_info, SECRET_KEY, ALGORITHM) #codificando o token usando a função encode da biblioteca jose, passando o dicionário de informações, a chave secreta e o algoritmo de criptografia configurados
+    return jwt_codificado #retornando o token codificado, que pode ser usado para autenticação e autorização em rotas protegidas da API
+
+def autenticar_usuario(email, senha, session):
+    usuario = session.query(Usuario).filter(Usuario.email == email).first() #consultando o banco de dados para encontrar um usuário com o email fornecido
+    if not usuario:
+        return False #se o usuário não for encontrado, retornando False para indicar que a autenticação falhou
+    elif not bcrypt_context.verify(senha, usuario.senha):#se o usuário for encontrado, verificando se a senha fornecida corresponde à senha armazenada no banco de dados usando o método verify do objeto bcrypt_context
+        return False #se a senha não corresponder, retornando False para indicar que a autenticação falhou
+    return usuario
+   
 
 @auth_router.get('/')
 async def home():
@@ -39,9 +50,9 @@ async def create_user(usuario_schema: UserSchema, session = Depends(pegar_sessao
 #login - email e senha - token JWT (JSON Web Token) para autenticação e autorização em rotas protegidas
 @auth_router.post('/login')
 async def login(login_schema: LoginSchema, session: Session = Depends(pegar_sessao)):
-    usuario = session.query(Usuario).filter(Usuario.email == login_schema.email).first() #consultando o banco de dados para encontrar um usuário com o email fornecido
+    usuario = autenticar_usuario(login_schema.email, login_schema.senha, session) #chamando a função autenticar_usuario para verificar as credenciais fornecidas e obter o usuário correspondente do banco de dados
     if not usuario:
-        raise HTTPException(status_code=400, detail="Usuário não encontrado") #se o usuário não for encontrado, levantando uma exceção HTTP com status 404 e uma mensagem de erro indicando que o usuário não foi encontrado
+        raise HTTPException(status_code=400, detail="Usuário não encontrado ou credenciais invalidas") #se o usuário não for encontrado, levantando uma exceção HTTP com status 404 e uma mensagem de erro indicando que o usuário não foi encontrado
     else:
         access_token = criar_token(usuario.id) #criando um token de acesso usando a função criar_token, passando o ID do usuário encontrado
         return {
