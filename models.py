@@ -55,7 +55,7 @@ class ItemPedido(Base):
     preco_unitario = Column("preco_unitario", Float,nullable=False)
     pedido = Column("pedido", ForeignKey("pedidos.id")) #chave estrangeira para relacionar o item ao pedido
      
-def __init__(self, quantidade, sabor, tamanho, preco_unitario, pedido):
+    def __init__(self, quantidade, sabor, tamanho, preco_unitario, pedido):
         self.quantidade = quantidade
         self.sabor = sabor
         self.tamanho = tamanho
