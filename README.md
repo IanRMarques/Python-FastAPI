@@ -44,6 +44,7 @@ source .venv/bin/activate     # Linux/Mac
 
 # 3. Install dependencies
 uv pip install fastapi uvicorn sqlalchemy passlib[bcrypt] python-jose[cryptography] python-dotenv python-multipart
+uv pip install python sqlalchemy_utils alembic
 
 # 4. Run the server
 uvicorn main:app --reload
@@ -68,18 +69,6 @@ uvicorn main:app --reload
 ---
 
 ## 🔗 Endpoints
-
-### Authentication
-| Method | Route | Description |
-|---|---|---|
-| POST | `/auth/login` | User login |
-| POST | `/auth/register` | User registration |
-
-### Orders
-| Method | Route | Description |
-|---|---|---|
-| GET | `/pedidos/` | List all orders |
-| POST | `/pedidos/` | Create a new order |
 
 ---
 
