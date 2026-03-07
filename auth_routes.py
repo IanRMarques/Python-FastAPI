@@ -1,6 +1,6 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from models import Usuario, db
-from sqlalchemy.orm import sessionmaker #importando a classe sessionmaker do SQLAlchemy para criar sessões de banco de dados
+from dependencies import pegar_sessao
 
 auth_router = APIRouter(prefix='/auth', tags=['auth'])
 
@@ -11,10 +11,8 @@ async def home():
 #criar rota para criar usuario.
 @auth_router.post('/create_user')
 #criando a função para criar um usuario, recebendo email e senha como parâmetros, e utilizando a classe Usuario do models para criar um novo usuário no banco de dados
-async def create_user(email: str,senha: str, nome:str):
+async def create_user(email: str,senha: str, nome:str, session = Depends(pegar_sessao)):
     #verificando se o email já existe.
-    Session = sessionmaker(bind=db) #criando uma classe de sessão vinculada ao engine do banco de dados
-    session = Session() #criando uma instância de sessão para interagir com o banco de dados
     usuario = session.query(Usuario).filter(Usuario.email == email).first() #consultando o banco de dados para verificar se já existe um usuário com o email fornecido
     if usuario:
         return {'message': 'Email já cadastrado'}
