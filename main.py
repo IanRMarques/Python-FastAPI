@@ -3,6 +3,8 @@
 # python -m venv venv
 # venv\Scripts\activate
 # uvicorn main:app --reload
+#..\.venv\Scripts\activate
+#usar o alembic para criar as tabelas, mudar o arquivo alembic.ini para apontar para o banco de dados correto, depois rodar os seguintes comandos:
 
 from fastapi import FastAPI
 app = FastAPI()
