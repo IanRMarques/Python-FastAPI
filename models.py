@@ -2,7 +2,7 @@ from sqlalchemy import Boolean, Column, ForeignKey, Integer, String,Float, creat
 from sqlalchemy.orm import declarative_base
 from sqlalchemy_utils import ChoiceType
 
-dp = create_engine("sqlite:///.database.db")    
+db = create_engine("sqlite:///.database.db")    
 
 #cria a base do bd
 Base = declarative_base()
