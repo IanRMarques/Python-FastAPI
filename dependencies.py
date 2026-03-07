@@ -1,5 +1,7 @@
 from models import db
 from sqlalchemy.orm import sessionmaker #importando a classe sessionmaker do SQLAlchemy para criar sessões de banco de dados
+from passlib.context import CryptContext
+bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def pegar_sessao():
     try:

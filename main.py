@@ -18,7 +18,6 @@ SECRET_KEY= os.getenv("SECRET_KEY") #obtendo o valor da variável de ambiente SE
 
 app = FastAPI()
 
-bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
  #criando um objeto CryptContext configurado para usar o algoritmo de hash bcrypt, que é uma escolha segura para armazenar senhas, 
  #e definindo a opção deprecated como "auto" para lidar automaticamente com senhas antigas que possam ter sido hashadas com algoritmos menos seguros
 from auth_routes import auth_router
