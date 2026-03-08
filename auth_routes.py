@@ -1,14 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException
 from models import Usuario, db
-from dependencies import bcrypt_context, ALGORITHM, SECRET_KEY, ACCESS_TOKEN_EXPIRE_MINUTES, pegar_sessao
+from dependencies import bcrypt_context, ALGORITHM, SECRET_KEY, ACCESS_TOKEN_EXPIRE_MINUTES, pegar_sessao, verificar_token
 from schemas import LoginSchema, UserSchema
 from sqlalchemy.orm import Session
 from jose import jwt, JWTError
 from datetime import datetime, timedelta, timezone #importando classes para lidar com datas e horários, especialmente para configurar a expiração dos tokens de autenticação
+
+
 auth_router = APIRouter(prefix='/auth', tags=['auth']) 
 
-def criar_token(id_usuario):
-    data_expiracao = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES) #calculando a data de expiração do token, 
+def criar_token(id_usuario, duracao_token = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)):
+    data_expiracao = datetime.now(timezone.utc) + duracao_token #calculando a data de expiração do token, 
     #adicionando o tempo de expiração configurado (em minutos) à data e hora atual
     dic_info = {"sub": id_usuario, "exp": data_expiracao} #criando um dicionário com as informações a serem incluídas no token, como o ID do usuário e a data de expiração
     jwt_codificado = jwt.encode(dic_info, SECRET_KEY, ALGORITHM) #codificando o token usando a função encode da biblioteca jose, passando o dicionário de informações, a chave secreta e o algoritmo de criptografia configurados
@@ -21,7 +23,6 @@ def autenticar_usuario(email, senha, session):
     elif not bcrypt_context.verify(senha, usuario.senha):#se o usuário for encontrado, verificando se a senha fornecida corresponde à senha armazenada no banco de dados usando o método verify do objeto bcrypt_context
         return False #se a senha não corresponder, retornando False para indicar que a autenticação falhou
     return usuario
-   
 
 @auth_router.get('/')
 async def home():
@@ -55,7 +56,21 @@ async def login(login_schema: LoginSchema, session: Session = Depends(pegar_sess
         raise HTTPException(status_code=400, detail="Usuário não encontrado ou credenciais invalidas") #se o usuário não for encontrado, levantando uma exceção HTTP com status 404 e uma mensagem de erro indicando que o usuário não foi encontrado
     else:
         access_token = criar_token(usuario.id) #criando um token de acesso usando a função criar_token, passando o ID do usuário encontrado
+        refresh_token = criar_token(usuario.id, duracao_token = timedelta(days=30)) #criando um token de atualização (refresh token) com uma duração mais longa, permitindo que o cliente obtenha um novo token de acesso sem precisar fazer login novamente
         return {
             "access_token": access_token, 
-            "token_type": "bearer"
+            "refresh_token": refresh_token,
+            "token_type": "bearer" #OAuth2
             } #retornando o token de acesso e o tipo de token como resposta da API, permitindo que o cliente use esse token para autenticação em rotas protegidas no futuro
+    
+
+@auth_router.get('/refresh')
+async def use_refresh_token(usuario: Usuario = Depends(verificar_token)):
+    #verificar o token
+    access_token = criar_token(usuario.id)
+    return {
+            "access_token": access_token, 
+            "token_type": "bearer"
+            }
+    # gerar um novo token de acesso
+        
